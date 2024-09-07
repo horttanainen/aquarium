@@ -1,3 +1,4 @@
+const HtmlWebpackPlugin = require("html-webpack-plugin");
 const path = require('path');
 
 module.exports = {
@@ -11,6 +12,17 @@ module.exports = {
         exclude: /node_modules/,
       },
     ],
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: 'index.html'
+    })
+  ],
+  devServer: {
+    devMiddleware: {
+      mimeTypes: { js: 'text/javascript' },
+    },
+    port: 3001,
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
