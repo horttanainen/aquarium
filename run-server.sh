@@ -2,7 +2,7 @@
 set -o errexit -o nounset -o pipefail
 
 function main() {
-  node dist/server/server.js
+  node --watch dist/server/server.js
 }
 
 main
