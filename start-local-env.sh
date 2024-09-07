@@ -21,6 +21,9 @@ tmux send-keys "$repo/build-server.sh" C-m
 tmux select-pane -t 1 
 tmux send-keys "$repo/run-server.sh" C-m
 
+tmux select-pane -t 2
+tmux send-keys "$repo/hot-reload-frontend.sh" C-m
+
 tmux select-pane -t 0
 tmux attach-session -t $session
 
