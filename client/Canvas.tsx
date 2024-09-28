@@ -1,7 +1,13 @@
 import { useEffect, useRef } from "react"
 
+export interface DrawParams {
+  ctx: CanvasRenderingContext2D
+  deltaTime: number
+  time: number
+}
+
 interface CanvasProps {
-  draw: (ctx: CanvasRenderingContext2D, frameCount: number) => void
+  draw: (params: DrawParams) => void
 }
 export function Canvas({draw}: CanvasProps) {
 
@@ -17,10 +23,13 @@ export function Canvas({draw}: CanvasProps) {
         return
       }
       let animationFrameId: number
-      let frameCount = 0
       
+      let lastRender = Date.now()
       const render = () => {
-        draw(context, frameCount++)
+        let time = Date.now()
+        const deltaTime = time - lastRender 
+        lastRender = time 
+        draw({ctx: context, deltaTime, time})
         animationFrameId = window.requestAnimationFrame(render)
       }
       render()
