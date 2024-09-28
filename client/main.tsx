@@ -1,55 +1,17 @@
 import { createRoot } from 'react-dom/client';
 import { Canvas, DrawParams } from './Canvas';
 import cloudImgSrc from './sprites/cloud.png'
-
-const objects: Obj[] = []
-
-let lastPhysInvokation = Date.now()
-function physics () {
-  let time = Date.now()
-  const deltaTime = time - lastPhysInvokation
-  lastPhysInvokation = time 
-  for (let obj of objects) {
-    if (!isMoving(obj)) {
-      continue
-    }
-    obj.pos.x += obj.vel.x * deltaTime / 1000
-    obj.pos.y += obj.vel.y * deltaTime / 1000
-  }
-}
+import { Obj, objects, physics, addObject } from './physics';
 
 function shouldRedraw(obj: Obj) {
   return Math.abs(obj.renderedPos.x - obj.pos.x) >= 1 ||
     Math.abs(obj.renderedPos.y - obj.pos.y) >= 1
 }
 
-function isMoving(obj: Obj) {
-  return obj.vel.x !== 0 || obj.vel.y !== 0
-}
-
-interface Obj {
-    vel: {
-      x: number,
-      y: number
-    },
-    renderedPos: {
-      x: number,
-      y: number
-    },
-    pos: {
-      x: number,
-      y: number
-    },
-    sprite: HTMLImageElement
-}
-function addObject(obj: Obj) {
-  objects.push(obj)
-}
-
 function Aquarium() {
 
   const cloudImg = new Image()
-  cloudImg.src = cloudImgSrc 
+  cloudImg.src = cloudImgSrc
 
   const cloud: Obj = {
     vel: {
