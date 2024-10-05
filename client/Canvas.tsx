@@ -8,8 +8,10 @@ export interface DrawParams {
 
 interface CanvasProps {
   draw: (params: DrawParams) => void
+  width: number
+  height: number
 }
-export function Canvas({draw}: CanvasProps) {
+export function Canvas({draw, height, width}: CanvasProps) {
 
     const canvasRef = useRef<HTMLCanvasElement|null>(null)
   
@@ -39,6 +41,6 @@ export function Canvas({draw}: CanvasProps) {
       }
     }, [draw])
   
-  return <canvas style={{width: '100%', position: 'absolute'}} ref={canvasRef} />
+  return <canvas height={height} width={width} ref={canvasRef} />
 }
 

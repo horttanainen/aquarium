@@ -2,6 +2,8 @@ import { createRoot } from 'react-dom/client';
 import { Canvas, DrawParams } from './Canvas';
 import cloudImgSrc from './sprites/cloud.png'
 import { Obj, objects, physics, addObject } from './physics';
+import { config } from './config';
+import { LegacyRef, RefObject, useEffect, useRef } from 'react';
 
 function shouldRedraw(obj: Obj) {
   return Math.abs(obj.renderedPos.x - obj.pos.x) >= 1 || Math.abs(obj.renderedPos.y - obj.pos.y) >= 1;
@@ -54,16 +56,37 @@ function Aquarium() {
     }
   };
 
-  const drawBackground = ({ctx}: DrawParams) => {
+  const drawSkyBackground = ({ctx}: DrawParams) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.fillStyle = 'lightblue';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   };
 
+  const drawGroundBackground = ({ctx}: DrawParams) => {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.fillStyle = 'saddlebrown';
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  };
+
+  const initialWindowPosition = useRef<HTMLDivElement|null>(null)
+
+  useEffect(() => {
+    if (!initialWindowPosition.current) {
+      return
+    }
+    initialWindowPosition.current.scrollIntoView({behavior: 'smooth'})
+  }, [])
+
   return (
     <>
-      <Canvas draw={drawBackground} />
-      <Canvas draw={drawForeground} />
+      <div style={{position: 'absolute'}}>
+        <Canvas draw={drawForeground} height={config.height} width={config.width}/>
+      </div>
+      <div>
+          <Canvas draw={drawSkyBackground} height={config.height / 2} width={config.width}/>
+          <div style={{position: 'relative', top: -config.height/3 + 'px'}} ref={initialWindowPosition}/>
+          <Canvas draw={drawGroundBackground} height={config.height / 2} width={config.width}/>
+      </div>
     </>
   );
 }
@@ -76,3 +99,4 @@ if (!rootElement) {
 
 const root = createRoot(rootElement);
 root.render(<Aquarium />);
+
