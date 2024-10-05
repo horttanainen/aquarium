@@ -11,6 +11,11 @@ export interface Obj {
     x: number,
     y: number
   },
+  scale: {
+    x: number,
+    y: number
+  },
+  z: number
   sprite: HTMLImageElement
 }
 
