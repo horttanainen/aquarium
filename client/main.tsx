@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { Canvas, DrawParams } from './Canvas';
 import cloudImgSrc from './sprites/cloud.png'
+import sunImgSrc from './sprites/sun.png'
 import { Obj, objects, physics, addObject } from './physics';
 import { config } from './config';
 import { useEffect, useRef } from 'react';
@@ -19,7 +20,8 @@ function createCloud(imgSrc: string, {velX, posX, posY, scale, z}: {velX: number
     scale: {x: scale, y: scale},
     renderedPos: { x: 0, y: 0 },
     z,
-    sprite: image
+    sprite: image,
+    name: "cloud"
   };
 }
 
@@ -38,12 +40,29 @@ function initializeClouds() {
   cloudConfigs.forEach(config => addObject(createCloud(cloudImg, config)));
 }
 
+function initializeSun() {
+  const image = new Image();
+  image.src = sunImgSrc;
+
+  const sunObj = {
+    vel: { x: 1, y: -1 },
+    pos: { x: 0, y: config.height / 2.5 },
+    scale: {x: 2, y: 2},
+    renderedPos: { x: 0, y: 0 },
+    z: -1,
+    sprite: image,
+    name: "sun"
+  };
+  addObject(sunObj)
+}
+
 function sortByZ(a: Obj, b: Obj) {
   return a.z - b.z
 }
 
 function Aquarium() {
   initializeClouds()
+  initializeSun()
   setInterval(physics, 10);
 
   const drawForeground = ({ctx}: DrawParams) => {

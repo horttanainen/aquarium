@@ -1,5 +1,6 @@
 export interface Obj {
-  vel: {
+  name: string
+  vel:  {
     x: number,
     y: number
   },
