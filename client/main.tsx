@@ -1,59 +1,13 @@
 import { createRoot } from 'react-dom/client';
 import { Canvas, DrawParams } from './Canvas';
-import cloudImgSrc from './sprites/cloud.png'
-import sunImgSrc from './sprites/sun.png'
-import { Obj, objects, physics, addObject } from './physics';
+import { physics } from './physics';
 import { config } from './config';
 import { useEffect, useRef } from 'react';
+import { initializeClouds, initializeSun,  Obj, objects } from './objects';
+import { getWalkableContext, setWalkableArea } from './walkable';
 
 function shouldRedraw(obj: Obj) {
   return Math.abs(obj.renderedPos.x - obj.pos.x) >= 1 || Math.abs(obj.renderedPos.y - obj.pos.y) >= 1;
-}
-
-function createCloud(imgSrc: string, {velX, posX, posY, scale, z}: {velX: number, velY: number, posX: number, posY: number, scale: number, z: number}): Obj {
-  const image = new Image();
-  image.src = imgSrc;
-
-  return {
-    vel: { x: velX, y: 0 },
-    pos: { x: posX, y: posY },
-    scale: {x: scale, y: scale},
-    renderedPos: { x: 0, y: 0 },
-    z,
-    sprite: image,
-    name: "cloud"
-  };
-}
-
-function initializeClouds() {
-  const cloudImg = cloudImgSrc;
-
-  const cloudConfigs = [...Array(100).keys()].map(_ind => {
-    const posX = Math.random() * config.width
-    const posY = Math.random() * config.height / 3
-    const velX = Math.random() * 20 - 10
-    const scale = Math.random() * 3 + 1
-
-      return {velX, velY: 0, posX, posY, scale, z: scale}
-    })
-
-  cloudConfigs.forEach(config => addObject(createCloud(cloudImg, config)));
-}
-
-function initializeSun() {
-  const image = new Image();
-  image.src = sunImgSrc;
-
-  const sunObj = {
-    vel: { x: 1, y: -1 },
-    pos: { x: 0, y: config.height / 2.5 },
-    scale: {x: 2, y: 2},
-    renderedPos: { x: 0, y: 0 },
-    z: -1,
-    sprite: image,
-    name: "sun"
-  };
-  addObject(sunObj)
 }
 
 function sortByZ(a: Obj, b: Obj) {
@@ -82,18 +36,29 @@ function Aquarium() {
         alreadyDrawn.push(objToRedraw);
       }
     }
+    return true 
+  };
+
+  const drawTerrain = ({ctx}: DrawParams) => {
+    ctx.fillStyle = 'green'
+    ctx.fillRect(0, ctx.canvas.height/2, ctx.canvas.width, 200)
+    setWalkableArea(0, ctx.canvas.height/2, ctx.canvas.width, 200, true)
+
+    return false
   };
 
   const drawSkyBackground = ({ctx}: DrawParams) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.fillStyle = 'lightblue';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    return false
   };
 
   const drawGroundBackground = ({ctx}: DrawParams) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.fillStyle = 'saddlebrown';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    return false
   };
 
   const initialWindowPosition = useRef<HTMLDivElement|null>(null)
@@ -109,6 +74,9 @@ function Aquarium() {
     <>
       <div style={{position: 'absolute'}}>
         <Canvas draw={drawForeground} height={config.height} width={config.width}/>
+      </div>
+      <div style={{position: 'absolute'}}>
+        <Canvas draw={drawTerrain} height={config.height} width={config.width}/>
       </div>
       <div>
           <Canvas draw={drawSkyBackground} height={config.height / 2} width={config.width}/>

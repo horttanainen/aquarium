@@ -1,26 +1,4 @@
-export interface Obj {
-  name: string
-  vel:  {
-    x: number,
-    y: number
-  },
-  renderedPos: {
-    x: number,
-    y: number
-  },
-  pos: {
-    x: number,
-    y: number
-  },
-  scale: {
-    x: number,
-    y: number
-  },
-  z: number
-  sprite: HTMLImageElement
-}
-
-export const objects: Obj[] = []
+import { Obj, objects } from "./objects"
 
 let lastPhysInvokation = Date.now()
 
@@ -39,8 +17,4 @@ export function physics() {
 
 export function isMoving(obj: Obj) {
   return obj.vel.x !== 0 || obj.vel.y !== 0
-}
-
-export function addObject(obj: Obj) {
-  objects.push(obj)
 }

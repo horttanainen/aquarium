@@ -7,7 +7,7 @@ export interface DrawParams {
 }
 
 interface CanvasProps {
-  draw: (params: DrawParams) => void
+  draw: (params: DrawParams) => boolean
   width: number
   height: number
 }
@@ -31,8 +31,10 @@ export function Canvas({draw, height, width}: CanvasProps) {
         let time = Date.now()
         const deltaTime = time - lastRender 
         lastRender = time 
-        draw({ctx: context, deltaTime, time})
-        animationFrameId = window.requestAnimationFrame(render)
+        const shouldRender = draw({ctx: context, deltaTime, time})
+        if (shouldRender) {
+          animationFrameId = window.requestAnimationFrame(render)
+        }
       }
       render()
       
