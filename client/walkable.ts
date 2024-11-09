@@ -1,7 +1,7 @@
 import { config } from './config';
 import { printFromCanvas } from './print';
 
-const walkableCanvas = new OffscreenCanvas(config.width, config.height);
+const walkableCanvas = new OffscreenCanvas(Math.floor(config.width/config.gridResolution), Math.floor(config.height/config.gridResolution));
 const walkableContext = walkableCanvas.getContext("2d");
 
 if (!walkableContext) {
@@ -21,7 +21,7 @@ export function canWalk(x: number, y: number) {
   if (!walkableContext) {
     throw new Error("Walkable context was null")
   }
-  const pixel = walkableContext.getImageData(x, y, 1, 1)
+  const pixel = walkableContext.getImageData(Math.floor(x/config.gridResolution), Math.floor(y/config.gridResolution), 1, 1)
   return pixel.data[0] === 255
 }
 
@@ -35,7 +35,7 @@ export function setWalkable(x: number, y: number, canWalk: boolean) {
   } else {
     walkableContext.fillStyle = 'rgb(0 0 0)'
   }
-  walkableContext.fillRect(x, y, 1, 1)
+  walkableContext.fillRect(Math.floor(x/config.gridResolution), Math.floor(y/config.gridResolution), 1, 1)
 }
 
 export function setWalkableArea(x: number, y: number, w:number, h: number, canWalk: boolean) {
@@ -48,5 +48,6 @@ export function setWalkableArea(x: number, y: number, w:number, h: number, canWa
   } else {
     walkableContext.fillStyle = 'rgb(0 0 0)'
   }
-  walkableContext.fillRect(x, y, w, h)
+  walkableContext.fillRect(Math.floor(x/config.gridResolution), Math.floor(y/config.gridResolution), Math.floor(w/config.gridResolution), Math.floor(h/config.gridResolution))
+  printFromCanvas(walkableCanvas)
 }
