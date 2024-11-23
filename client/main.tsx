@@ -2,9 +2,10 @@ import { createRoot } from 'react-dom/client';
 import { Canvas, DrawParams } from './Canvas';
 import { physics } from './physics';
 import { config } from './config';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { initializeClouds, initializeSun,  Obj, objects } from './objects';
-import { getWalkableContext, setWalkableArea } from './walkable';
+import { printCollider, setCollider } from './collider';
+import { getWangContext, initializeTerrain, loadTiles } from './terrain';
 
 function shouldRedraw(obj: Obj) {
   return Math.abs(obj.renderedPos.x - obj.pos.x) >= 1 || Math.abs(obj.renderedPos.y - obj.pos.y) >= 1;
@@ -18,6 +19,16 @@ function Aquarium() {
   initializeClouds()
   initializeSun()
   setInterval(physics, 10);
+
+  const [tilesLoaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    const load = async () => {
+      await loadTiles()
+      initializeTerrain()
+    }
+    load().then(() => setLoaded(true))
+  }, [])
 
   const drawForeground = ({ctx}: DrawParams) => {
     const alreadyDrawn: Obj[] = [];
@@ -40,11 +51,47 @@ function Aquarium() {
   };
 
   const drawTerrain = ({ctx}: DrawParams) => {
-    ctx.fillStyle = 'green'
-    ctx.fillRect(0, ctx.canvas.height/2, ctx.canvas.width, 200)
-    setWalkableArea(0, ctx.canvas.height/2, ctx.canvas.width, 200, true)
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const wangContext = getWangContext()
+    const subsetX = Math.floor(Math.random() * (wangContext.canvas.width - config.wangSquarePx * 2))
+    const subsetY = Math.floor(Math.random() * (wangContext.canvas.height - config.wangSquarePx * 2))
 
-    return false
+    const wangSubset = wangContext.getImageData(subsetX, subsetY, config.wangSquarePx * 4, config.wangSquarePx * 4)
+
+    const dataByPixels = wangSubset.data.reduce((acc: number[][], cur) => {
+      const row = acc[acc.length - 1]
+      row.push(cur)
+      if (row.length === 4) {
+        acc.push([])
+      }
+      return acc
+      }, [[]])
+    const dataByRows = dataByPixels.reduce((acc: number[][][], cur) => {
+      const row = acc[acc.length - 1]
+      row.push(cur)
+      if (row.length % (config.wangSquarePx * 4) === 0) {
+        acc.push([])
+      }
+      return acc
+      }, [[]])
+
+    let tmpX = 0
+    let tmpY = 0
+    dataByRows.forEach(row => {
+      tmpX = 0
+      row.forEach(pixel => {
+        if (pixel[0] === 255 && pixel[1] === 255 && pixel[2] == 255) {
+          ctx.fillStyle = `chocolate`
+          ctx.fillRect(tmpX, Math.floor(config.height/2) + tmpY, config.gridResolution, config.gridResolution)
+          setCollider(tmpX, Math.floor(config.height/2) + tmpY, config.gridResolution, config.gridResolution, true)
+        }
+        tmpX += config.gridResolution
+      })
+      tmpY += config.gridResolution
+    })
+
+    printCollider()
+    return !tilesLoaded
   };
 
   const drawSkyBackground = ({ctx}: DrawParams) => {
