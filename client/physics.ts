@@ -7,9 +7,14 @@ export function physics() {
   const deltaTime = time - lastPhysInvokation
   lastPhysInvokation = time
   for (let obj of objects) {
-    if (!isMoving(obj)) {
+    if (!isMoving(obj) && obj.gravity === 0) {
       continue
     }
+
+    obj.vel.y += obj.gravity * deltaTime / 1000
+
+    obj.vel.y = Math.min(obj.vel.y, 200)
+
     obj.pos.x += obj.vel.x * deltaTime / 1000
     obj.pos.y += obj.vel.y * deltaTime / 1000
   }

@@ -1,11 +1,11 @@
 import { createRoot } from 'react-dom/client';
 import { Canvas, DrawParams } from './Canvas';
-import { physics } from './physics';
 import { config } from './config';
 import { useEffect, useRef, useState } from 'react';
-import { initializeClouds, initializeSun,  Obj, objects } from './objects';
-import { printCollider, setCollider } from './collider';
+import { initializeClouds, initializeFallingObjects, initializeSun,  Obj, objects } from './objects';
+import { clearCollider, setCollider } from './collider';
 import { getWangContext, initializeTerrain, loadTiles } from './terrain';
+import { redraw, resetRedraw, startGame } from './main_loop';
 
 function shouldRedraw(obj: Obj) {
   return Math.abs(obj.renderedPos.x - obj.pos.x) >= 1 || Math.abs(obj.renderedPos.y - obj.pos.y) >= 1;
@@ -18,7 +18,7 @@ function sortByZ(a: Obj, b: Obj) {
 function Aquarium() {
   initializeClouds()
   initializeSun()
-  setInterval(physics, 10);
+  initializeFallingObjects()
 
   const [tilesLoaded, setLoaded] = useState(false)
 
@@ -27,10 +27,17 @@ function Aquarium() {
       await loadTiles()
       initializeTerrain()
     }
-    load().then(() => setLoaded(true))
+    load().then(() => {
+      setLoaded(true)
+      startGame()
+    })
   }, [])
 
   const drawForeground = ({ctx}: DrawParams) => {
+    if (!redraw) {
+      true
+    }
+    resetRedraw()
     const alreadyDrawn: Obj[] = [];
     for (let obj of objects) {
       if (alreadyDrawn.includes(obj) || !shouldRedraw(obj)) {
@@ -52,6 +59,7 @@ function Aquarium() {
 
   const drawTerrain = ({ctx}: DrawParams) => {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    clearCollider()
     const wangContext = getWangContext()
     const subsetX = Math.floor(Math.random() * (wangContext.canvas.width - config.wangSquarePx * 2))
     const subsetY = Math.floor(Math.random() * (wangContext.canvas.height - config.wangSquarePx * 2))
@@ -80,9 +88,10 @@ function Aquarium() {
     dataByRows.forEach(row => {
       tmpX = 0
       row.forEach(pixel => {
-        if (pixel[0] === 255 && pixel[1] === 255 && pixel[2] == 255) {
-          ctx.fillStyle = `chocolate`
+        if (pixel[3] === 255) {
+          ctx.fillStyle = `rgb(175 100 0)`
           ctx.fillRect(tmpX, Math.floor(config.height/2) + tmpY, config.gridResolution, config.gridResolution)
+          
           setCollider(tmpX, Math.floor(config.height/2) + tmpY, config.gridResolution, config.gridResolution, true)
         }
         tmpX += config.gridResolution
@@ -90,7 +99,6 @@ function Aquarium() {
       tmpY += config.gridResolution
     })
 
-    printCollider()
     return !tilesLoaded
   };
 
